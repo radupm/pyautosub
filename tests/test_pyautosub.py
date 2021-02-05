@@ -5,7 +5,7 @@
 
 import unittest
 
-from pyautosub import pyautosub
+from pyautosub import AutoSub
 
 
 class TestPyautosub(unittest.TestCase):
