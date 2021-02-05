@@ -20,7 +20,7 @@ PyAutoSub
 
 
 
-A module that watc, downloads subtitles from opensubtitles.org and muxes them into the MKV container.
+A module that watches, downloads subtitles from opensubtitles.org and muxes them into the MKV container.
 
 
 * Free software: GNU General Public License v3
