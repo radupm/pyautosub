@@ -1,21 +1,20 @@
 #!/usr/bin/env python
-
 """Tests for `pyautosub` package."""
-
 
 import unittest
 
 from pyautosub import AutoSub
+from os import environ
 
 
-class TestPyautosub(unittest.TestCase):
+class TestPyAutoSub(unittest.TestCase):
     """Tests for `pyautosub` package."""
-
     def setUp(self):
-        """Set up test fixtures, if any."""
+        assert bool(AutoSub)
+        assert environ.get("OS_U") and environ.get("OS_P")
 
     def tearDown(self):
         """Tear down test fixtures, if any."""
 
-    def test_000_something(self):
-        """Test something."""
+    def test_1(self):
+        assert True

@@ -20,7 +20,6 @@ logging.basicConfig(
 
 
 class AutoSub:
-
     """
     Watches folder path for newly added mkv files and, for each:\n
         - gets ffprobe stats\n
@@ -40,18 +39,20 @@ class AutoSub:
     watch_path : str
         filesystem path to watch for created MKV files. Defaults to "."
     watch_recursive : bool
-        wether to watch subfolders of the `watch_path` recursively or not. Defaults `True`
+        wether to watch subfolders of the `watch_path` recursively or not.
+        Defaults `True`
 
     Methods
     -------
     watch():
         Starts the AutoSub folder watcher
     download_subtitle():
-        Downloads subtitles from opensubtitles.org, in the defined language (`os_language`) and stores them in a tempfile
+        Downloads subtitles from opensubtitles.org, in the defined language
+        (`os_language`) and stores them in a tempfile
     add_subtitle(set_default=True):
-        Muxes the subtitle in the MKV file and sets it as default if the flag is set appropriately (Default `True`)
+        Muxes the subtitle in the MKV file and sets it as default if the flag
+        is set appropriately (Default `True`)
     """
-
     def __init__(
         self,
         os_useraname: str,
@@ -100,13 +101,14 @@ class AutoSub:
                 if stream.is_video():
                     video_stream_id = idx
                 if stream.is_audio():
-                    audio_tracks.append(
-                        {
-                            "codec": stream.codec(),
-                            "stream_id": idx,
-                            "stream_name": stream.__dict__.get("TAG:title", None),
-                        }
-                    )
+                    audio_tracks.append({
+                        "codec":
+                        stream.codec(),
+                        "stream_id":
+                        idx,
+                        "stream_name":
+                        stream.__dict__.get("TAG:title", None),
+                    })
                     if stream.codec() == "dts":
                         dts_tracks += 1
                         has_dts = True
@@ -129,7 +131,8 @@ class AutoSub:
         return stats
 
     def _on_any_event(self, event):
-        # TODO replace with download and add sub methods. Consider adding threading and queue.
+        # TODO replace with download and add sub methods.
+        # Consider adding threading and queue.
         self._logger.info(event)
 
     def _stop(self):
@@ -139,7 +142,8 @@ class AutoSub:
     def watch(self):
         self._observer.start()
         try:
-            self._logger.info(f"Starting watcher on {self.watch_path.absolute()}")
+            self._logger.info(
+                f"Starting watcher on {self.watch_path.absolute()}")
             while True:
                 sleep(0.2)
         except KeyboardInterrupt:
@@ -148,8 +152,10 @@ class AutoSub:
 
     def download_subtitle(self):
         """
-        Downloads subtitles from opensubtitles.org, in the defined language and stores them in a tempfile.
-        Search is trying to match movie by hash and if it is unsuccessful, it searches by movie name.
+        Downloads subtitles from opensubtitles.org, in the defined language
+        and stores them in a tempfile.
+        Search is trying to match movie by hash and if it is unsuccessful,
+        it searches by movie name.
         Only first match is considered.
         """
         ost = OpenSubtitles()
@@ -162,32 +168,29 @@ class AutoSub:
         for movie in mkv_files:
             movie_file = File(movie.absolute())
             # search by hash, if not, by name
-            ost_data = ost.search_subtitles(
-                [
-                    {
-                        "sublanguageid": self.os_language
-                        if len(self.os_language) == 3
-                        else self.os_language,
-                        "moviehash": movie_file.get_hash(),
-                    },
-                    {
-                        "sublanguageid": self.os_language
-                        if len(self.os_language) == 3
-                        else self.os_language,
-                        "query": movie.name,
-                    },
-                ]
-            )
+            ost_data = ost.search_subtitles([
+                {
+                    "sublanguageid":
+                    self.os_language
+                    if len(self.os_language) == 3 else self.os_language,
+                    "moviehash":
+                    movie_file.get_hash(),
+                },
+                {
+                    "sublanguageid":
+                    self.os_language
+                    if len(self.os_language) == 3 else self.os_language,
+                    "query":
+                    movie.name,
+                },
+            ])
             if ost_data:
                 # #  downloading first subtitle
                 plain_link = ost_data[0]["SubDownloadLink"]
                 sub_link_parts = plain_link.split("/download/")
                 #  rebuilding link to get utf-8 subtitle
-                sub_link = (
-                    sub_link_parts[0]
-                    + "/download/subencoding-utf8/"
-                    + sub_link_parts[1]
-                )
+                sub_link = (sub_link_parts[0] + "/download/subencoding-utf8/" +
+                            sub_link_parts[1])
                 response = requests.get(sub_link)
                 tmp, tmp_name = tempfile.mkstemp()
                 with open(tmp, "wb") as srt_out:
@@ -199,12 +202,14 @@ class AutoSub:
 
     def add_subtitle(self, set_default=True):
         """
-        Muxes the subtitle in the MKV file and sets it as default if the flag is set appropriately (default True)
+        Muxes the subtitle in the MKV file and sets it as default if the flag
+        is set appropriately (default True)
 
         Parameters
         ----------
             set_default : bool
-                wether to set the muxed subtitle as default subtitle track. Default is `True`
+                wether to set the muxed subtitle as default subtitle track.
+                Default is `True`
         """
         stats = self._get_stats()
         subs = self.download_subtitles()
@@ -225,4 +230,6 @@ class AutoSub:
         return True
 
 
-# [{'file_path': PosixPath('Up in the Air 2009 1080p BluRay DTS x264-CtrlHD.mkv'), 'audio_tracks': 2, 'has_dts': True, 'dts_tracks': 1, 'sub_tracks': 0, 'has_lang': False, 'sub': '/tmp/tmpyeq93w1e'}]
+# [{'file_path': PosixPath('sample.mkv'),
+# 'audio_tracks': 2, 'has_dts': True, 'dts_tracks': 1, 'sub_tracks': 0,
+# 'has_lang': False, 'sub': '/tmp/tmpyeq93w1e'}]
